@@ -8,7 +8,6 @@
       --bg-color: #f7f9fc;
       --card-bg: #ffffff;
       --primary-color: #6c5ce7;
-      --secondary-color: #a29bfe;
       --text-color: #2d3436;
       --border-radius: 16px;
     }
@@ -29,6 +28,48 @@
       font-weight: 700;
       color: #2d3436;
       letter-spacing: -0.5px;
+    }
+
+    /* IP 설정 입력 창 스타일 */
+    .ip-box {
+      margin-bottom: 20px;
+      background: var(--card-bg);
+      padding: 12px 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid rgba(223, 230, 233, 0.8);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input[type="text"] {
+      padding: 8px 12px;
+      font-size: 15px;
+      width: 140px;
+      border: 2px solid #dfe4ea;
+      border-radius: 8px;
+      outline: none;
+      text-align: center;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary-color);
+    }
+
+    .ip-box button {
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #0984e3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    .ip-box button:hover {
+      background-color: #74b9ff;
     }
 
     /* 리모컨 메인 컨테이너 */
@@ -85,7 +126,6 @@
       cursor: not-allowed;
     }
 
-    /* 특별 강조 버튼 (기록 시작/정지/귀환) */
     #recordBtn { background-color: #ff7675; color: white; box-shadow: 0 4px 12px rgba(255, 118, 117, 0.3); }
     #recordBtn:hover:not(:disabled) { background-color: #d63031; }
 
@@ -95,11 +135,11 @@
     #returnBtn { background-color: #55efc4; color: #00b894; box-shadow: 0 4px 12px rgba(85, 239, 196, 0.3); }
     #returnBtn:hover:not(:disabled) { background-color: #00b894; color: white; }
 
-    /* 십자 방향키 리모컨 레이아웃 */
+    /* 십자 방향키 리모컨 레이아웃 (3x2 컴팩트 구조) */
     .d-pad {
       display: grid;
       grid-template-columns: repeat(3, 75px);
-      grid-template-rows: repeat(3, 75px);
+      grid-template-rows: repeat(2, 75px);
       gap: 8px;
       justify-content: center;
       margin-bottom: 20px;
@@ -109,16 +149,23 @@
       background-color: #ffffff;
       border: 2px solid #e1e8ed;
       border-radius: 14px;
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
       color: #2d3436;
       cursor: pointer;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       transition: all 0.1s ease;
       box-shadow: 0 4px 6px rgba(0,0,0,0.02);
       user-select: none;
+    }
+
+    .control-btn span {
+      font-size: 11px;
+      color: #b2bec3;
+      margin-top: 2px;
     }
 
     .control-btn:hover:not(:disabled) {
@@ -133,6 +180,7 @@
       transform: scale(0.95);
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
+    .control-btn.active span { color: #f1f2f6; }
 
     .control-btn:disabled {
       background-color: #f8f9fa;
@@ -142,12 +190,20 @@
       box-shadow: none;
     }
 
-    /* Grid 위치 배치 */
-    .btn-forward { grid-column: 2; grid-row: 1; }
-    .btn-left    { grid-column: 1; grid-row: 2; }
-    .btn-stop    { grid-column: 2; grid-row: 2; background-color: #ffeaa7; border-color: #fdcb6e; }
-    .btn-right   { grid-column: 3; grid-row: 2; }
-    .btn-backward{ grid-column: 2; grid-row: 3; }
+    /* Grid 위치 배치 (전진 위, 좌/우 중간, 후진 아래) */
+    .btn-forward  { grid-column: 2; grid-row: 1; }
+    .btn-left     { grid-column: 1; grid-row: 2; }
+    .btn-right    { grid-column: 3; grid-row: 2; }
+    .btn-backward { grid-column: 2; grid-row: 2; } /* 필요시 세로 배치를 위해 2행 조정 가능 */
+
+    /* 좀 더 예쁜 십자 배치를 위한 행 조정 */
+    .d-pad {
+      grid-template-rows: 75px 75px 75px;
+    }
+    .btn-forward  { grid-column: 2; grid-row: 1; }
+    .btn-left     { grid-column: 1; grid-row: 2; }
+    .btn-right    { grid-column: 3; grid-row: 2; }
+    .btn-backward { grid-column: 2; grid-row: 3; }
 
     /* 로그 창 */
     .log-container {
@@ -174,6 +230,13 @@
 
   <h2>✨ ESP32 Smart Robot Remote ✨</h2>
 
+  <!-- IP 설정 및 연결 테스트 영역 -->
+  <div class="ip-box">
+    ESP32 IP : 
+    <input id="espIP" type="text" value="192.168.0.25">
+    <button onclick="testESP()">연결 테스트</button>
+  </div>
+
   <div class="remote-container">
     
     <!-- 메뉴 패널 -->
@@ -184,15 +247,14 @@
       <button class="btn-menu" id="returnBtn" onclick="returnHome()" disabled>🏠 제자리로 돌아오기</button>
     </div>
 
-    <!-- 주행 버튼 패널 (리모컨 스타일 십자 배열) -->
+    <!-- 주행 버튼 패널 (정지 버튼 제외, W/A/S/D 키보드 지원) -->
     <div style="width: 100%;">
       <div class="section-title" style="text-align: center;">Driving Pad</div>
       <div class="d-pad">
-        <button class="control-btn btn-forward" data-cmd="f" disabled>전진</button>
-        <button class="control-btn btn-left" data-cmd="l" disabled>좌회전</button>
-        <button class="control-btn btn-stop" data-cmd="s" disabled>정지</button>
-        <button class="control-btn btn-right" data-cmd="r" disabled>우회전</button>
-        <button class="control-btn btn-backward" data-cmd="b" disabled>후진</button>
+        <button class="control-btn btn-forward" data-cmd="f" disabled>전진<span>[W]</span></button>
+        <button class="control-btn btn-left" data-cmd="l" disabled>좌회전<span>[A]</span></button>
+        <button class="control-btn btn-right" data-cmd="r" disabled>우회전<span>[D]</span></button>
+        <button class="control-btn btn-backward" data-cmd="b" disabled>후진<span>[S]</span></button>
       </div>
     </div>
 
@@ -206,10 +268,22 @@
 
   <script>
     let isRecording = false;
-    let recordedMemory = []; // 기록을 담을 메모리 (이전 기록은 정지/시작 시 자동 초기화)
+    let recordedMemory = []; 
     let currentAction = null;
     let startTime = null;
-    const ESP_IP = "http://192.168.0.25"; // 본인 ESP32 IP 주소로 수정
+
+    // ESP32 연결 성공/실패 팝업 테스트 함수
+    function testESP(){
+      const ip = document.getElementById("espIP").value;
+      fetch(`http://${ip}/`)
+      .then(response => response.text())
+      .then(data => {
+        alert("ESP32 연결 성공\n" + data);
+      })
+      .catch(error => {
+        alert("ESP32 연결 실패");
+      });
+    }
 
     function addLog(msg) {
       const logDiv = document.getElementById("log");
@@ -218,18 +292,18 @@
     }
 
     function sendCmd(cmd) {
-      fetch(`${ESP_IP}/control?cmd=${cmd}`).catch(err => console.log("통신 에러 (오프라인 테스트 중일 수 있음)"));
+      const ip = document.getElementById("espIP").value;
+      fetch(`http://${ip}/control?cmd=${cmd}`).catch(err => console.log("통신 에러"));
     }
 
     function toggleRecord() {
       isRecording = true;
-      recordedMemory = []; // 두 번 기록 시 이전 메모리 제거
+      recordedMemory = []; 
       
       document.getElementById("recordBtn").disabled = true;
       document.getElementById("stopRecordBtn").disabled = false;
       document.getElementById("returnBtn").disabled = true;
       
-      // 조작 버튼 활성화
       document.querySelectorAll('.control-btn').forEach(b => b.disabled = false);
       addLog("운전 기록을 시작합니다.");
     }
@@ -240,51 +314,72 @@
       document.getElementById("stopRecordBtn").disabled = true;
       document.getElementById("returnBtn").disabled = recordedMemory.length > 0 ? false : true;
 
-      // 조작 버튼 비활성화
       document.querySelectorAll('.control-btn').forEach(b => b.disabled = true);
       sendCmd('s');
       addLog("운전 기록이 정지 및 메모리에 저장되었습니다.");
     }
 
-    // 마우스 및 터치 이벤트 핸들러 바인딩 (누르고 있는 동안 동작, 떼면 정지 및 기록)
+    function startAction(cmd) {
+      if (!isRecording) return;
+      if (currentAction === cmd) return;
+      currentAction = cmd;
+      startTime = Date.now();
+      sendCmd(cmd);
+
+      const btn = document.querySelector(`.control-btn[data-cmd="${cmd}"]`);
+      if (btn) btn.classList.add('active');
+    }
+
+    function endAction(cmd) {
+      if (!isRecording || currentAction !== cmd) return;
+      
+      let duration = (Date.now() - startTime) / 1000; 
+      sendCmd('s'); // 손을 떼는 순간 's'(정지) 전송
+
+      const btn = document.querySelector(`.control-btn[data-cmd="${cmd}"]`);
+      if (btn) btn.classList.remove('active');
+
+      if (duration > 0.1) {
+        recordedMemory.push({ cmd: currentAction, duration: duration });
+
+        let msg = "";
+        if (currentAction === 'f') msg = `${duration.toFixed(1)}초 간 전진했어요!`;
+        else if (currentAction === 'b') msg = `${duration.toFixed(1)}초 간 후진했어요!`;
+        else if (currentAction === 'l') msg = `${duration.toFixed(1)}초 동안 차량을 좌측으로 돌렸어요!`;
+        else if (currentAction === 'r') msg = `${duration.toFixed(1)}초 동안 차량을 우측으로 돌렸어요!`;
+
+        if (msg) addLog(msg);
+      }
+      currentAction = null;
+    }
+
+    // 마우스 및 터치 이벤트
     document.querySelectorAll('.control-btn').forEach(btn => {
       const cmd = btn.getAttribute('data-cmd');
+      btn.addEventListener('mousedown', (e) => { e.preventDefault(); startAction(cmd); });
+      btn.addEventListener('mouseup', (e) => { e.preventDefault(); endAction(cmd); });
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(cmd); });
+      btn.addEventListener('touchend', (e) => { e.preventDefault(); endAction(cmd); });
+    });
 
-      const start = (e) => {
-        e.preventDefault();
-        if (!isRecording && cmd !== 's') return;
-        currentAction = cmd;
-        startTime = Date.now();
-        sendCmd(cmd);
-        btn.classList.add('active');
-      };
+    // 키보드 이벤트 (W, A, S, D)
+    const keyMap = { 'w': 'f', 'a': 'l', 's': 'b', 'd': 'r' };
+    const activeKeys = {};
 
-      const end = (e) => {
-        e.preventDefault();
-        btn.classList.remove('active');
-        if (!isRecording || !currentAction) return;
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if (keyMap[key] && !activeKeys[key]) {
+        activeKeys[key] = true;
+        startAction(keyMap[key]);
+      }
+    });
 
-        let duration = (Date.now() - startTime) / 1000; // 초 단위 계산
-        sendCmd('s');
-
-        if (duration > 0.1 && currentAction !== 's') {
-          recordedMemory.push({ cmd: currentAction, duration: duration });
-
-          let msg = "";
-          if (currentAction === 'f') msg = `${duration.toFixed(1)}초 간 전진했어요!`;
-          else if (currentAction === 'b') msg = `${duration.toFixed(1)}초 간 후진했어요!`;
-          else if (currentAction === 'l') msg = `${duration.toFixed(1)}초 동안 차량을 좌측으로 돌렸어요!`;
-          else if (currentAction === 'r') msg = `${duration.toFixed(1)}초 동안 차량을 우측으로 돌렸어요!`;
-
-          if (msg) addLog(msg);
-        }
-        currentAction = null;
-      };
-
-      btn.addEventListener('mousedown', start);
-      btn.addEventListener('mouseup', end);
-      btn.addEventListener('touchstart', start);
-      btn.addEventListener('touchend', end);
+    window.addEventListener('keyup', (e) => {
+      const key = e.key.toLowerCase();
+      if (keyMap[key] && activeKeys[key]) {
+        activeKeys[key] = false;
+        endAction(keyMap[key]);
+      }
     });
 
     // 제자리로 돌아오기 (역순 재생)
@@ -292,7 +387,6 @@
       if (recordedMemory.length === 0) return;
       addLog("제자리로 돌아오기를 시작합니다.");
 
-      // 기록을 역순으로 배치
       let reverseActions = [...recordedMemory].reverse();
 
       for (let item of reverseActions) {
@@ -308,7 +402,7 @@
         sendCmd(returnCmd);
         await new Promise(resolve => setTimeout(resolve, item.duration * 1000));
         sendCmd('s');
-        await new ResponseTimeout = setTimeout(() => {}, 200); // 동작 간 짧은 텀
+        await new Promise(resolve => setTimeout(resolve, 200)); 
       }
 
       sendCmd('s');
