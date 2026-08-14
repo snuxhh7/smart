@@ -1,220 +1,251 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>MediaPipe NeoPixel Touch</title>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-<style>
-body{
-  margin:0;
-  background:#111;
-  color:white;
-  text-align:center;
-  font-family:Arial;
-}
-h2{margin:10px}
-input{
-  padding:7px;
-  font-size:16px;
-  width:150px;
-}
-button{
-  padding:7px 15px;
-  font-size:16px;
-}
-#status{
-  font-size:30px;
-  font-weight:bold;
-  margin:10px;
-}
-#box{
-  position:relative;
-  width:640px;
-  height:480px;
-  margin:auto;
-}
-video{
-  display:none;
-}
-canvas{
-  position:absolute;
-  left:0;
-  top:0;
-  width:640px;
-  height:480px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수원 동별 미세먼지 조회</title>
+  <style>
+    :root {
+      --navy: #102a43;
+      --blue: #1976d2;
+      --sky: #e7f2ff;
+      --green: #18a67d;
+      --muted: #6b7c93;
+      --white: #fff;
+      --shadow: 0 14px 35px rgba(16, 42, 67, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--navy);
+      font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
+      background: linear-gradient(135deg, #eef7ff, #f7fbff 55%, #e9fff8);
+    }
+
+    header {
+      padding: 35px 20px 25px;
+      text-align: center;
+    }
+
+    h1 { margin: 0 0 9px; font-size: clamp(25px, 5vw, 39px); }
+    header p { margin: 0; color: var(--muted); }
+
+    main { width: min(960px, calc(100% - 32px)); margin: 0 auto 50px; }
+
+    .key-box, .dashboard {
+      padding: 22px;
+      border: 1px solid rgba(25, 118, 210, .12);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .93);
+      box-shadow: var(--shadow);
+    }
+
+    .key-row { display: flex; gap: 10px; }
+    .key-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 13px 15px;
+      border: 1px solid #cbd9e6;
+      border-radius: 11px;
+      font-size: 15px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 11px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s, box-shadow .15s;
+    }
+    button:hover { transform: translateY(-2px); }
+
+    .save-btn { padding: 0 22px; color: white; background: var(--blue); }
+    .help { margin: 10px 2px 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .dashboard { margin-top: 24px; }
+    @keyframes show { from { opacity: 0; transform: translateY(8px); } }
+
+    .dash-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .dash-head h2 { margin: 0; font-size: 24px; }
+    .refresh { padding: 10px 15px; color: var(--blue); background: var(--sky); }
+    .station-search {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 17px;
+      border-radius: 15px;
+      background: #eef8f4;
+    }
+    .station-search label { align-self: center; font-weight: 800; white-space: nowrap; }
+    .station-search input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid #b9d8ce;
+      border-radius: 10px;
+      color: var(--navy);
+      background: white;
+      font-size: 16px;
+    }
+    .station-search button { padding: 0 22px; color: white; background: var(--green); }
+
+    .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 22px; }
+    .card { min-height: 155px; padding: 24px; border-radius: 17px; background: #f5f9fd; }
+    .card .label { color: var(--muted); font-size: 15px; }
+    .value { margin-top: 18px; font-size: clamp(34px, 7vw, 52px); font-weight: 800; }
+    .unit { margin-left: 4px; font-size: 18px; font-weight: 600; color: var(--muted); }
+    .grade { margin-top: 9px; font-weight: 800; }
+    .meta { margin: 20px 2px 0; color: var(--muted); font-size: 14px; }
+    .message { min-height: 22px; margin: 14px 2px 0; font-size: 14px; color: #d14343; }
+    .loading { opacity: .55; }
+
+    footer { padding: 0 15px 25px; text-align: center; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 620px) {
+      .key-row, .dash-head { align-items: stretch; flex-direction: column; }
+      .save-btn { padding: 13px; }
+      .cards { grid-template-columns: 1fr; }
+      .station-search { align-items: stretch; flex-direction: column; }
+      .station-search button { padding: 13px; }
+    }
+  </style>
 </head>
 <body>
-<h2>MediaPipe NeoPixel Touch</h2>
-ESP32 IP :
-<input id="espIP" value="192.168.0.23">
-<button onclick="testESP()">연결 테스트</button>
-<div id="status">LED OFF</div>
-<div id="box">
-  <video id="video" width="640" height="480" autoplay playsinline></video>
-  <canvas id="canvas" width="640" height="480"></canvas>
-</div>
-<script>
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const statusText = document.getElementById("status");
-const BUTTON_X = 500;
-const BUTTON_Y = 120;
-const BUTTON_RADIUS = 55;
-let ledOn = false;
-let previousTouch = false;
-function testESP(){
-  const ip = document.getElementById("espIP").value;
-  fetch(`http://${ip}/`)
-  .then(response => response.text())
-  .then(data => {
-    alert("ESP32 연결 성공\n" + data);
-  })
-  .catch(error => {
-    alert("ESP32 연결 실패");
-  });
-}
-function sendLED(state){
-  const ip = document.getElementById("espIP").value;
-  fetch(`http://${ip}/led?state=${state}`)
-  .then(response => response.text())
-  .then(data => {
-    console.log(data);
-  })
-  .catch(error => {
-    console.log("ESP32 통신 오류");
-  });
-}
-function onResults(results){
-  ctx.save();
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-  ctx.translate(canvas.width,0);
-  ctx.scale(-1,1);
-  ctx.drawImage(
-    results.image,
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-  ctx.restore();
-  if(ledOn){
-    ctx.fillStyle="red";
-  }else{
-    ctx.fillStyle="#500000";
-  }
-  ctx.beginPath();
-  ctx.arc(
-    BUTTON_X,
-    BUTTON_Y,
-    BUTTON_RADIUS,
-    0,
-    Math.PI*2
-  );
-  ctx.fill();
-  ctx.lineWidth=5;
-  ctx.strokeStyle="red";
-  ctx.stroke();
-  ctx.fillStyle="white";
-  ctx.font="bold 20px Arial";
-  ctx.textAlign="center";
-  ctx.fillText(
-    ledOn ? "ON" : "OFF",
-    BUTTON_X,
-    BUTTON_Y+7
-  );
-  let currentTouch=false;
-  if(results.multiHandLandmarks){
-    for(const landmarks of results.multiHandLandmarks){
-      const flipped = landmarks.map(p => ({
-        x:1-p.x,
-        y:p.y,
-        z:p.z
-      }));
-      drawConnectors(
-        ctx,
-        flipped,
-        HAND_CONNECTIONS,
-        {
-          color:"#00FF00",
-          lineWidth:3
+  <header>
+    <h1>수원 지역 공공데이터 대시보드</h1>
+    <p>수원 지역 측정소의 실시간 미세먼지 정보를 확인합니다.</p>
+  </header>
+
+  <main>
+    <section class="key-box">
+      <div class="key-row">
+        <input id="serviceKey" type="password" placeholder="공공데이터포털 일반 인증키(Decoding)를 입력하세요">
+        <button class="save-btn" onclick="saveKey()">인증키 저장</button>
+      </div>
+      <p class="help">인증키는 이 브라우저에만 저장되며 GitHub에 올라가지 않습니다. 에어코리아 대기오염정보 API의 활용신청이 필요합니다.</p>
+    </section>
+
+    <section id="dust" class="dashboard">
+      <div class="dash-head">
+        <h2>수원 미세먼지</h2>
+        <button class="refresh" onclick="loadDust()">새로고침</button>
+      </div>
+      <div class="station-search">
+        <label for="stationName">조회할 동</label>
+        <input id="stationName" list="suwonStations" type="text" placeholder="예: 인계동, 영통동" autocomplete="off">
+        <datalist id="suwonStations">
+          <option value="인계동"></option><option value="천천동"></option>
+          <option value="신풍동"></option><option value="영통동"></option>
+          <option value="호매실동"></option><option value="고색동"></option>
+          <option value="광교동"></option>
+        </datalist>
+        <button onclick="loadDust()">미세먼지 조회</button>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <div class="label">미세먼지 PM10</div>
+          <div class="value"><span id="pm10">--</span><span class="unit">㎍/㎥</span></div>
+          <div id="pm10Grade" class="grade"></div>
+        </article>
+        <article class="card">
+          <div class="label">초미세먼지 PM2.5</div>
+          <div class="value"><span id="pm25">--</span><span class="unit">㎍/㎥</span></div>
+          <div id="pm25Grade" class="grade"></div>
+        </article>
+      </div>
+      <p id="dustMeta" class="meta">한국환경공단 에어코리아 · 수원 지역 측정소</p>
+      <p id="dustMessage" class="message"></p>
+    </section>
+  </main>
+
+  <footer>데이터 출처: 한국환경공단 에어코리아</footer>
+
+  <script>
+    const DUST_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty";
+
+    const keyInput = document.getElementById("serviceKey");
+    const stationInput = document.getElementById("stationName");
+    const SUWON_STATIONS = ["인계동", "천천동", "신풍동", "영통동", "호매실동", "고색동", "광교동"];
+    keyInput.value = localStorage.getItem("publicDataServiceKey") || "";
+    stationInput.value = localStorage.getItem("suwonDustStation") || "";
+    stationInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") loadDust();
+    });
+
+    function saveKey() {
+      const key = keyInput.value.trim();
+      if (!key) return alert("공공데이터포털 일반 인증키(Decoding)를 입력해 주세요.");
+      localStorage.setItem("publicDataServiceKey", key);
+      alert("인증키를 이 브라우저에 저장했습니다.");
+    }
+
+    function getKey() {
+      let key = keyInput.value.trim();
+      if (!key) throw new Error("먼저 공공데이터포털 인증키를 입력해 주세요.");
+      try { key = decodeURIComponent(key); } catch (_) {}
+      return key;
+    }
+
+    async function loadDust() {
+      const panel = document.getElementById("dust");
+      const message = document.getElementById("dustMessage");
+      message.textContent = "";
+      panel.classList.add("loading");
+
+      try {
+        const key = getKey();
+        const stationName = stationInput.value.trim();
+        if (!stationName) throw new Error("수원 지역 동 이름을 입력해 주세요.");
+        if (!SUWON_STATIONS.includes(stationName)) {
+          throw new Error(`'${stationName}'에는 에어코리아 측정소가 없습니다. 입력 목록에서 선택해 주세요.`);
         }
-      );
-      drawLandmarks(
-        ctx,
-        flipped,
-        {
-          color:"#00FFFF",
-          radius:3
-        }
-      );
-      const tip = flipped[8];
-      const x = tip.x * canvas.width;
-      const y = tip.y * canvas.height;
-      ctx.beginPath();
-      ctx.arc(x, y,15, 0, Math.PI*2);
-      ctx.fillStyle="yellow";
-      ctx.fill();
-      const dx = x - BUTTON_X;
-      const dy = y - BUTTON_Y;
-      const distance = Math.sqrt(dx*dx + dy*dy );
-      if(distance < BUTTON_RADIUS){
-        currentTouch=true;
-        ctx.fillStyle="yellow";
-        ctx.font= "bold 25px Arial";
-        ctx.fillText("TOUCH",BUTTON_X,BUTTON_Y+90);
+        localStorage.setItem("suwonDustStation", stationName);
+        const params = new URLSearchParams({
+          serviceKey: key, returnType: "json", numOfRows: "1", pageNo: "1",
+          stationName, dataTerm: "DAILY", ver: "1.3"
+        });
+        const response = await fetch(`${DUST_URL}?${params}`);
+        if (!response.ok) throw new Error(`대기 API 응답 오류(${response.status})`);
+        const data = await response.json();
+        const header = data.response?.header;
+        if (header?.resultCode !== "00") throw new Error(header?.resultMsg || "대기 데이터를 받지 못했습니다.");
+        const item = data.response?.body?.items?.[0];
+        if (!item) throw new Error(`${stationName} 측정소 데이터가 없습니다.`);
+        document.getElementById("pm10").textContent = validValue(item.pm10Value);
+        document.getElementById("pm25").textContent = validValue(item.pm25Value);
+        setGrade("pm10Grade", Number(item.pm10Value), "pm10");
+        setGrade("pm25Grade", Number(item.pm25Value), "pm25");
+        document.getElementById("dustMeta").textContent = `에어코리아 · ${stationName} 측정소 · ${item.dataTime || "측정시각 없음"}`;
+      } catch (error) {
+        message.textContent = "⚠️ " + error.message;
+      } finally {
+        panel.classList.remove("loading");
       }
     }
-  }
-  if( currentTouch && !previousTouch){
-    ledOn = !ledOn;
-    if(ledOn){
-      statusText.innerText= "NeoPixel RED ON";
-      statusText.style.color= "red";
-      sendLED("on");
-    }else{
-      statusText.innerText="NeoPixel OFF";
-      statusText.style.color="white";
-      sendLED("off");
+
+    function validValue(value) {
+      return value && value !== "-" ? value : "자료없음";
     }
-  }
-  previousTouch =
-    currentTouch;
-}
-const hands = new Hands({
-  locateFile:(file)=>{
-    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-  }
-});
-hands.setOptions({
-  maxNumHands:1,
-  modelComplexity:1,
-  minDetectionConfidence:0.7,
-  minTrackingConfidence:0.7
-});
-hands.onResults(onResults);
-const camera = new Camera(
-  video,
-  {
-    onFrame:async()=>{
-      await hands.send({
-        image:video
-      });
-    },
-    width:640,
-    height:480
-  }
-);
-camera.start();
-</script>
+
+    function setGrade(id, value, type) {
+      const element = document.getElementById(id);
+      if (!Number.isFinite(value)) {
+        element.textContent = "등급: 자료없음";
+        element.style.color = "#6b7c93";
+        return;
+      }
+      const limits = type === "pm10" ? [30, 80, 150] : [15, 35, 75];
+      const grades = [
+        ["좋음", "#1683d8"], ["보통", "#15966f"],
+        ["나쁨", "#e28b19"], ["매우 나쁨", "#d14343"]
+      ];
+      const index = value <= limits[0] ? 0 : value <= limits[1] ? 1 : value <= limits[2] ? 2 : 3;
+      element.textContent = `등급: ${grades[index][0]}`;
+      element.style.color = grades[index][1];
+    }
+  </script>
 </body>
 </html>
