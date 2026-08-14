@@ -6,7 +6,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-
 <style>
 body{
   margin:0;
@@ -63,38 +62,22 @@ const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const statusText = document.getElementById("status");
-
-// ================================
-// 빨간 터치 버튼
-// ================================
 const BUTTON_X = 500;
 const BUTTON_Y = 120;
 const BUTTON_RADIUS = 55;
-
-// LED 상태
 let ledOn = false;
-  
-// 이전 프레임 터치 상태
 let previousTouch = false;
-
-// ================================
-// ESP32 연결 테스트
-// ================================
 function testESP(){
   const ip = document.getElementById("espIP").value;
   fetch(`http://${ip}/`)
   .then(response => response.text())
   .then(data => {
-   alert("ESP32 연결 성공\n" + data);
+    alert("ESP32 연결 성공\n" + data);
   })
   .catch(error => {
     alert("ESP32 연결 실패");
   });
 }
-
-// ================================
-// ESP32 LED 전송
-// ================================
 function sendLED(state){
   const ip = document.getElementById("espIP").value;
   fetch(`http://${ip}/led?state=${state}`)
@@ -106,10 +89,6 @@ function sendLED(state){
     console.log("ESP32 통신 오류");
   });
 }
-
-// ================================
-// MediaPipe 결과
-// ================================
 function onResults(results){
   ctx.save();
   ctx.clearRect(
@@ -118,8 +97,6 @@ function onResults(results){
     canvas.width,
     canvas.height
   );
-
-  // 카메라 좌우 반전
   ctx.translate(canvas.width,0);
   ctx.scale(-1,1);
   ctx.drawImage(
@@ -130,20 +107,12 @@ function onResults(results){
     canvas.height
   );
   ctx.restore();
-
-  // ================================
-  // 터치 버튼
-  // ================================
   if(ledOn){
-    // LED ON이면 빨간색 채움
     ctx.fillStyle="red";
   }else{
-    // OFF이면 어두운 빨강
     ctx.fillStyle="#500000";
   }
-
   ctx.beginPath();
-
   ctx.arc(
     BUTTON_X,
     BUTTON_Y,
@@ -151,13 +120,10 @@ function onResults(results){
     0,
     Math.PI*2
   );
-
   ctx.fill();
   ctx.lineWidth=5;
   ctx.strokeStyle="red";
   ctx.stroke();
-
-  // 버튼 글자
   ctx.fillStyle="white";
   ctx.font="bold 20px Arial";
   ctx.textAlign="center";
@@ -167,20 +133,13 @@ function onResults(results){
     BUTTON_Y+7
   );
   let currentTouch=false;
-
-  // ================================
-  // 손 검출
-  // ================================
   if(results.multiHandLandmarks){
     for(const landmarks of results.multiHandLandmarks){
-      // 좌우 반전 좌표로 랜드마크 다시 계산
       const flipped = landmarks.map(p => ({
         x:1-p.x,
         y:p.y,
         z:p.z
       }));
-
-      // 손 뼈 그리기
       drawConnectors(
         ctx,
         flipped,
@@ -198,30 +157,16 @@ function onResults(results){
           radius:3
         }
       );
-
-      // ================================
-      // 검지 끝 ID = 8
-      // ================================
       const tip = flipped[8];
       const x = tip.x * canvas.width;
       const y = tip.y * canvas.height;
-      
-      // 검지 끝 노란 원
       ctx.beginPath();
       ctx.arc(x, y,15, 0, Math.PI*2);
       ctx.fillStyle="yellow";
       ctx.fill();
-
-      // ================================
-      // 버튼까지 거리
-      // ================================
       const dx = x - BUTTON_X;
       const dy = y - BUTTON_Y;
       const distance = Math.sqrt(dx*dx + dy*dy );
-
-      // ================================
-      // 원 안으로 들어오면 TOUCH
-      // ================================
       if(distance < BUTTON_RADIUS){
         currentTouch=true;
         ctx.fillStyle="yellow";
@@ -230,16 +175,6 @@ function onResults(results){
       }
     }
   }
-
-  // ================================
-  // Toggle
-  // ================================
-
-  /*
-     이전 프레임 = 원 밖
-     현재 프레임 = 원 안
-     이 순간에만 실행
-  */
   if( currentTouch && !previousTouch){
     ledOn = !ledOn;
     if(ledOn){
@@ -255,16 +190,11 @@ function onResults(results){
   previousTouch =
     currentTouch;
 }
-
-// ================================
-// MediaPipe Hands
-// ================================
 const hands = new Hands({
   locateFile:(file)=>{
     return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
   }
 });
-
 hands.setOptions({
   maxNumHands:1,
   modelComplexity:1,
@@ -272,10 +202,6 @@ hands.setOptions({
   minTrackingConfidence:0.7
 });
 hands.onResults(onResults);
-
-// ================================
-// Camera
-// ================================
 const camera = new Camera(
   video,
   {
@@ -291,5 +217,4 @@ const camera = new Camera(
 camera.start();
 </script>
 </body>
-
 </html>
