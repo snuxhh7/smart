@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>ESP32 Smart Robot — Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #f0f2f8;
+      --card: #ffffff;
+      --primary: #6c5ce7;
+      --primary-light: #a29bfe;
+      --accent: #00cec9;
+      --green: #00b894;
+      --yellow: #fdcb6e;
+      --red: #e17055;
+      --blue: #0984e3;
+      --text: #1e272e;
+      --text-sub: #57606f;
+      --text-muted: #a4b0be;
+      --border: rgba(108,92,231,0.09);
+      --radius: 20px;
+      --shadow: 0 8px 32px rgba(108,92,231,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(108,92,231,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 85%, rgba(0,206,201,0.07) 0%, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px 90px;
+    }
+
+    /* ── Nav ─────────────────────────────────── */
+    .top-nav {
+      width: 940px;
+      max-width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 32px;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 18px;
+      border-radius: 100px;
+      text-decoration: none;
+      box-shadow: var(--shadow);
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* ── Hero ────────────────────────────────── */
+    .hero {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--primary) 20%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .hero .subtitle {
+      font-size: 16px;
+      color: var(--text-sub);
+      font-weight: 500;
+      line-height: 1.7;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── Layout ──────────────────────────────── */
+    .doc-container {
+      width: 940px;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* ── Card ────────────────────────────────── */
+    .card {
+      background: var(--card);
+      padding: 36px 40px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 44px rgba(108,92,231,0.14);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      border-radius: 4px 0 0 4px;
+    }
+
+    /* ── Section Title ───────────────────────── */
+    .section-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(108,92,231,0.09), rgba(0,206,201,0.07));
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 18px;
+      letter-spacing: -0.5px;
+    }
+
+    .content-box {
+      font-size: 15.5px;
+      line-height: 1.8;
+      color: var(--text-sub);
+      white-space: pre-line;
+    }
+
+    /* ── Edit Button ─────────────────────────── */
+    .edit-toggle-btn {
+      position: absolute;
+      top: 30px; right: 30px;
+      background: rgba(108,92,231,0.07);
+      color: var(--primary);
+      border: 1px solid rgba(108,92,231,0.15);
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .edit-toggle-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    textarea.edit-input {
+      width: 100%;
+      min-height: 110px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 2px solid var(--primary-light);
+      border-radius: 12px;
+      resize: vertical;
+      outline: none;
+      background: #fafafe;
+      color: var(--text);
+      display: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea.edit-input:focus { border-color: var(--primary); }
+
+    /* ── Architecture Flow ───────────────────── */
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .arch-node {
+      background: linear-gradient(145deg, #f4f3ff, #eef9f9);
+      border: 1.5px solid rgba(108,92,231,0.15);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: center;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .arch-node .node-icon { font-size: 26px; margin-bottom: 6px; }
+    .arch-node .node-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .arch-node .node-desc { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+
+    .arch-arrow {
+      font-size: 22px;
+      color: var(--primary-light);
+      flex-shrink: 0;
+    }
+
+    .arch-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .arch-label .proto {
+      font-size: 10.5px;
+      font-weight: 700;
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 100px;
+      letter-spacing: 0.5px;
+    }
+
+    .arch-label .port {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ── Tech Grid ───────────────────────────── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .tech-item {
+      background: linear-gradient(145deg, #f8f9ff, #f2f3fa);
+      border: 1px solid rgba(108,92,231,0.10);
+      padding: 18px 16px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .tech-item:hover {
+      background: linear-gradient(145deg, #eeecff, #e8f8f7);
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(108,92,231,0.14);
+    }
+
+    .tech-item .tech-icon { font-size: 22px; margin-bottom: 4px; }
+    .tech-item .tech-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;
+    }
+    .tech-item strong { font-size: 15px; color: var(--text); font-weight: 700; }
+
+    .tech-tooltip {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: #1e272e;
+      color: #ecf0f1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      width: 210px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .tech-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #1e272e;
+    }
+
+    .tech-item:hover .tech-tooltip {
+      opacity: 1; visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Pin Map Table ───────────────────────── */
+    .pin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    .pin-table thead tr {
+      background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,206,201,0.06));
+    }
+
+    .pin-table th {
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .pin-table td {
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(108,92,231,0.07);
+      color: var(--text-sub);
+    }
+
+    .pin-table tr:last-child td { border-bottom: none; }
+
+    .pin-table tr:hover td {
+      background: rgba(108,92,231,0.03);
+    }
+
+    .pin-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 100px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .pin-badge.green  { background: var(--green); }
+    .pin-badge.yellow { background: #e1a813; }
+    .pin-badge.blue   { background: var(--blue); }
+    .pin-badge.grey   { background: #636e72; }
+
+    /* ── LED Status ──────────────────────────── */
+    .led-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .led-item {
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1.5px solid transparent;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .led-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .led-dot {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px 3px currentColor;
+    }
+
+    .led-info .led-cmd { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .led-info .led-action { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 2px; }
+
+    .led-forward  { background: rgba(0,184,148,0.08);  border-color: rgba(0,184,148,0.2); }
+    .led-backward { background: rgba(225,112,85,0.08);  border-color: rgba(225,112,85,0.2); }
+    .led-left     { background: rgba(253,203,110,0.12); border-color: rgba(253,203,110,0.3); }
+    .led-right    { background: rgba(9,132,227,0.08);   border-color: rgba(9,132,227,0.2); }
+    .led-stop     { background: rgba(99,110,114,0.06);  border-color: rgba(99,110,114,0.15); }
+
+    /* ── WebSocket Protocol ──────────────────── */
+    .ws-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    .ws-table thead tr {
+      background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,206,201,0.06));
+    }
+
+    .ws-table th {
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .ws-table td {
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(108,92,231,0.07);
+      color: var(--text-sub);
+    }
+
+    .ws-table tr:last-child td { border-bottom: none; }
+    .ws-table tr:hover td { background: rgba(108,92,231,0.03); }
+
+    .cmd-badge {
+      display: inline-block;
+      background: #1e272e;
+      color: #0be881;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+    }
+
+    /* ── Steps ───────────────────────────────── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 20px;
+      background: #fafafe;
+      border: 1px solid rgba(108,92,231,0.08);
+      border-radius: 15px;
+      transition: all 0.2s ease;
+    }
+
+    .step-item:hover {
+      background: linear-gradient(135deg, rgba(108,92,231,0.05), rgba(0,206,201,0.04));
+      border-color: rgba(108,92,231,0.18);
+      transform: translateX(4px);
+    }
+
+    .step-num {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      font-size: 14px;
+      font-weight: 800;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text { font-size: 14.5px; color: var(--text-sub); line-height: 1.65; }
+    .step-text strong { color: var(--text); font-weight: 700; display: block; margin-bottom: 3px; font-size: 15px; }
+
+    /* ── Feature List ────────────────────────── */
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: #fafafe;
+      border: 1px solid rgba(108,92,231,0.07);
+      transition: all 0.2s ease;
+    }
+
+    .feature-item:hover {
+      background: linear-gradient(135deg, rgba(108,92,231,0.05), rgba(0,206,201,0.04));
+      border-color: rgba(108,92,231,0.18);
+      transform: translateX(4px);
+    }
+
+    .feature-item .icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .feature-item .feature-text { font-size: 14.5px; color: var(--text-sub); line-height: 1.65; }
+    .feature-item .feature-text strong { color: var(--text); font-weight: 700; display: block; margin-bottom: 3px; font-size: 15px; }
+
+    /* ── Two Column ──────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    @media (max-width: 680px) {
+      .two-col { grid-template-columns: 1fr; }
+      .arch-flow { flex-direction: column; }
+      .arch-arrow { transform: rotate(90deg); }
+    }
+
+    /* ── Code Block ──────────────────────────── */
+    .code-block {
+      background: #1e272e;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+
+    .code-block code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #0be881;
+      white-space: pre;
+    }
+
+    /* ── Footer ──────────────────────────────── */
+    .footer {
+      margin-top: 60px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 네비게이션 -->
+  <div class="top-nav">
+    <a class="nav-link" href="index.html">
+      🎮 원격 제어 패널로 이동 →
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">🤖 Documentation</div>
+    <h1>ESP32 Smart Robot Project</h1>
+    <p class="subtitle">WebSocket 기반 실시간 무선 제어 &amp; 자율 주행 경로 재생 시스템<br>ESP32 펌웨어 · HTML/CSS/JS 웹 컨트롤러 통합 문서</p>
+  </div>
+
+  <div class="doc-container">
+
+    <!-- 1. 프로젝트 개요 -->
+    <div class="card" id="overviewCard">
+      <button class="edit-toggle-btn" onclick="toggleEdit('overview')">✏️ 편집</button>
+      <div class="section-title">📋 Overview</div>
+      <h2>프로젝트 소개</h2>
+      <div class="content-box" id="overviewText">ESP32 마이크로컨트롤러와 웹 브라우저를 WebSocket으로 실시간 연동하여 스마트 로봇을 원격 제어합니다. 사용자가 직접 주행한 경로를 시간 단위로 기록하고, 정방향 재생 또는 역순 복귀(Return Home) 기능으로 정밀하게 재현할 수 있는 웹 기반 임베디드 제어 시스템입니다.
+
+NeoPixel LED가 방향별로 다른 색상을 표시하며, 키보드(W/A/S/D) 및 화면 D-Pad 모두 지원합니다.</div>
+      <textarea class="edit-input" id="overviewInput"></textarea>
+    </div>
+
+    <!-- 2. 시스템 아키텍처 -->
+    <div class="card">
+      <div class="section-title">🏗 System Architecture</div>
+      <h2>시스템 구성도</h2>
+      <div class="arch-flow">
+        <div class="arch-node">
+          <div class="node-icon">🖥️</div>
+          <div class="node-name">Web Browser</div>
+          <div class="node-desc">HTML5 / CSS3 / JS<br>D-Pad UI · 경로 기록</div>
+        </div>
+        <div class="arch-label">
+          <span class="proto">WebSocket</span>
+          <span class="port">Port 81</span>
+        </div>
+        <div class="arch-arrow">⇄</div>
+        <div class="arch-node">
+          <div class="node-icon">📡</div>
+          <div class="node-name">ESP32-WROOM</div>
+          <div class="node-desc">Wi-Fi STA 모드<br>192.168.0.50</div>
+        </div>
+        <div class="arch-arrow" style="color:#a4b0be;">→</div>
+        <div class="arch-node">
+          <div class="node-icon">⚙️</div>
+          <div class="node-name">TB6612 Driver</div>
+          <div class="node-desc">듀얼 DC 모터<br>PWM 속도 제어</div>
+        </div>
+        <div class="arch-arrow" style="color:#a4b0be;">→</div>
+        <div class="arch-node">
+          <div class="node-icon">🤖</div>
+          <div class="node-name">Robot Body</div>
+          <div class="node-desc">DC Motor × 2<br>NeoPixel LED × 2</div>
+        </div>
+      </div>
+      <div class="code-block" style="margin-top:20px;">
+        <code>Browser  ──[ws://192.168.0.50:81]──▶  ESP32 (WebSocketsServer)
+                                          │
+Browser  ──[POST /play_path  :80 ]──▶  ESP32 (WebServer)  ← 경로 재생 전용</code>
+      </div>
+    </div>
+
+    <!-- 3. 사용 기술 스택 -->
+    <div class="card">
+      <div class="section-title">🛠 Tech Stack</div>
+      <h2>사용 기술 및 환경</h2>
+      <div class="tech-grid">
+        <div class="tech-item">
+          <div class="tech-icon">🔌</div>
+          <span class="tech-label">Hardware</span>
+          <strong>ESP32-WROOM</strong>
+          <div class="tech-tooltip">Wi-Fi · 블루투스 내장 MCU. 로봇의 메인 두뇌. 240MHz 듀얼 코어.</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">⚡</div>
+          <span class="tech-label">Communication</span>
+          <strong>WebSocket</strong>
+          <div class="tech-tooltip">Port 81 양방향 실시간 통신. HTTP 폴링 대비 지연 없음.</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🖥️</div>
+          <span class="tech-label">Frontend</span>
+          <strong>HTML5 / CSS3 / JS</strong>
+          <div class="tech-tooltip">D-Pad UI, 키보드 제어, 경로 기록 시스템. 별도 프레임워크 없음.</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🏎️</div>
+          <span class="tech-label">Motor Driver</span>
+          <strong>TB6612FNG</strong>
+          <div class="tech-tooltip">듀얼 채널 H-Bridge 모터 드라이버. PWM으로 속도 제어.</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">💡</div>
+          <span class="tech-label">LED</span>
+          <strong>NeoPixel WS2812B</strong>
+          <div class="tech-tooltip">GPIO 27번, 2개 연결. 방향별로 색상 변경하여 상태 시각화.</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">📦</div>
+          <span class="tech-label">Libraries</span>
+          <strong>ArduinoJson · WebSockets</strong>
+          <div class="tech-tooltip">ArduinoJson: 경로 JSON 파싱. WebSocketsServer: 실시간 통신.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 핀맵 + LED 상태 -->
+    <div class="two-col">
+
+      <!-- 핀맵 -->
+      <div class="card">
+        <div class="section-title">📌 Pin Map</div>
+        <h2>하드웨어 연결</h2>
+        <table class="pin-table">
+          <thead>
+            <tr>
+              <th>GPIO</th>
+              <th>기능</th>
+              <th>타입</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="pin-badge">19</span></td><td>PWMA (좌측 모터 속도)</td><td>PWM</td></tr>
+            <tr><td><span class="pin-badge">18</span></td><td>PWMB (우측 모터 속도)</td><td>PWM</td></tr>
+            <tr><td><span class="pin-badge green">33</span></td><td>AIN1 — 좌측 방향 A</td><td>Digital</td></tr>
+            <tr><td><span class="pin-badge green">32</span></td><td>AIN2 — 좌측 방향 B</td><td>Digital</td></tr>
+            <tr><td><span class="pin-badge yellow">25</span></td><td>BIN1 — 우측 방향 A</td><td>Digital</td></tr>
+            <tr><td><span class="pin-badge yellow">26</span></td><td>BIN2 — 우측 방향 B</td><td>Digital</td></tr>
+            <tr><td><span class="pin-badge blue">5</span></td><td>STBY (모터 대기/활성)</td><td>Digital</td></tr>
+            <tr><td><span class="pin-badge grey">27</span></td><td>NeoPixel LED 데이터</td><td>Digital</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- LED 상태 -->
+      <div class="card">
+        <div class="section-title">💡 LED Status</div>
+        <h2>NeoPixel 색상 가이드</h2>
+        <div class="led-grid">
+          <div class="led-item led-forward">
+            <div class="led-dot" style="background:#00b894; color:#00b894;"></div>
+            <div class="led-info">
+              <div class="led-cmd">CMD: f</div>
+              <div class="led-action">전진 🟢</div>
+            </div>
+          </div>
+          <div class="led-item led-backward">
+            <div class="led-dot" style="background:#e17055; color:#e17055;"></div>
+            <div class="led-info">
+              <div class="led-cmd">CMD: b</div>
+              <div class="led-action">후진 🔴</div>
+            </div>
+          </div>
+          <div class="led-item led-left">
+            <div class="led-dot" style="background:#fdcb6e; color:#fdcb6e;"></div>
+            <div class="led-info">
+              <div class="led-cmd">CMD: l</div>
+              <div class="led-action">좌회전 🟡</div>
+            </div>
+          </div>
+          <div class="led-item led-right">
+            <div class="led-dot" style="background:#0984e3; color:#0984e3;"></div>
+            <div class="led-info">
+              <div class="led-cmd">CMD: r</div>
+              <div class="led-action">우회전 🔵</div>
+            </div>
+          </div>
+          <div class="led-item led-stop">
+            <div class="led-dot" style="background:#dfe6e9; color:#b2bec3;"></div>
+            <div class="led-info">
+              <div class="led-cmd">CMD: s</div>
+              <div class="led-action">정지 ⚪</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. WebSocket 프로토콜 -->
+    <div class="card">
+      <div class="section-title">📡 WebSocket Protocol</div>
+      <h2>통신 명세</h2>
+      <table class="ws-table">
+        <thead>
+          <tr>
+            <th>명령어</th>
+            <th>동작</th>
+            <th>모터 A (좌)</th>
+            <th>모터 B (우)</th>
+            <th>LED 색상</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-badge">f</span></td>
+            <td>전진 (Forward)</td>
+            <td>LOW → HIGH</td>
+            <td>HIGH → LOW</td>
+            <td>🟢 Green (0,255,0)</td>
+          </tr>
+          <tr>
+            <td><span class="cmd-badge">b</span></td>
+            <td>후진 (Backward)</td>
+            <td>HIGH → LOW</td>
+            <td>LOW → HIGH</td>
+            <td>🔴 Red (255,0,0)</td>
+          </tr>
+          <tr>
+            <td><span class="cmd-badge">l</span></td>
+            <td>좌회전 (Left Turn)</td>
+            <td>LOW → HIGH</td>
+            <td>LOW → HIGH</td>
+            <td>🟡 Yellow (255,255,0)</td>
+          </tr>
+          <tr>
+            <td><span class="cmd-badge">r</span></td>
+            <td>우회전 (Right Turn)</td>
+            <td>HIGH → LOW</td>
+            <td>HIGH → LOW</td>
+            <td>🔵 Blue (0,0,255)</td>
+          </tr>
+          <tr>
+            <td><span class="cmd-badge">s</span></td>
+            <td>정지 (Stop)</td>
+            <td>LOW</td>
+            <td>LOW</td>
+            <td>⚪ White (255,255,255)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <code>// 연결: WebSocket Port 81
+ws = new WebSocket(`ws://192.168.0.50:81`);
+
+// 명령 전송 예시
+ws.send("f");   // 전진
+ws.send("s");   // 정지
+
+// 경로 재생: HTTP POST /play_path (Port 80)
+// Body: { "path": [{"cmd":"f","duration":1.2}, ...] }</code>
+      </div>
+    </div>
+
+    <!-- 6. 핵심 기능 -->
+    <div class="card">
+      <div class="section-title">✨ Key Features</div>
+      <h2>핵심 기능</h2>
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="icon">🚀</span>
+          <div class="feature-text">
+            <strong>실시간 WebSocket 통신</strong>
+            지연 없는 양방향 통신. 키보드(W/A/S/D) 또는 D-Pad 버튼 입력 즉시 ESP32로 단일 문자 명령 전송.
+          </div>
+        </li>
+        <li class="feature-item">
+          <span class="icon">🔴</span>
+          <div class="feature-text">
+            <strong>주행 경로 메모리 기록</strong>
+            기록 시작 버튼 클릭 시 명령어(cmd)와 구동 시간(duration)을 JS 배열에 실시간 누적 저장. mousedown/mouseup 이벤트 기반 정밀 타이밍.
+          </div>
+        </li>
+        <li class="feature-item">
+          <span class="icon">🚗</span>
+          <div class="feature-text">
+            <strong>정방향 길 따라가기 (Replay)</strong>
+            저장된 시퀀스를 async/await + setTimeout으로 순차 재생. 각 스텝 사이 200ms 정지 구간 포함.
+          </div>
+        </li>
+        <li class="feature-item">
+          <span class="icon">🏠</span>
+          <div class="feature-text">
+            <strong>역순 제자리 복귀 (Return Home)</strong>
+            기록 배열을 reverse() 후 f↔b, l↔r 반전 매핑 적용. 동일 시간으로 역경로 자동 주행.
+          </div>
+        </li>
+        <li class="feature-item">
+          <span class="icon">💡</span>
+          <div class="feature-text">
+            <strong>NeoPixel 방향 시각화</strong>
+            방향별 고유 색상으로 로봇 상태를 LED로 즉각 표시. Adafruit_NeoPixel 라이브러리 사용.
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 7. 사용 방법 -->
+    <div class="card">
+      <div class="section-title">🚦 How to Use</div>
+      <h2>사용 방법 — Step by Step</h2>
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>ESP32 전원 켜기 & Wi-Fi 연결</strong>
+            ESP32가 <code style="background:#f1f2f6;padding:2px 6px;border-radius:5px;font-size:13px;">192.168.0.50</code> 로 부팅됩니다. 같은 Wi-Fi(FirstClass2.4G)에 연결된 기기에서 접속하세요.
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>mediapipe.html 열기 & 연결 테스트</strong>
+            IP 입력란에 <code style="background:#f1f2f6;padding:2px 6px;border-radius:5px;font-size:13px;">192.168.0.50</code> 을 확인하고 "연결 테스트" 버튼을 클릭하세요. 성공 시 WebSocket이 연결됩니다.
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>로봇 수동 제어</strong>
+            "🔴 운전 기록 시작" 버튼 클릭 → D-Pad 또는 키보드(W/A/S/D)로 로봇 조종 → "⏹ 운전 기록 정지"로 완료.
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>경로 재생 또는 복귀</strong>
+            "🚗 길 따라가기"로 동일 경로 반복 주행, "🏠 제자리 복귀"로 역방향 자동 복귀. 기록은 🗑️ 버튼으로 삭제 가능.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    ESP32 Smart Robot Project &nbsp;·&nbsp; ESP32 + WebSocket + HTML/CSS/JS &nbsp;·&nbsp;
+    <a href="index.html" style="color:var(--primary);text-decoration:none;font-weight:600;">→ 컨트롤 패널 열기</a>
+  </div>
+
+<script>
+  window.onload = function () {
+    const saved = localStorage.getItem('overviewText');
+    const textDiv = document.getElementById('overviewText');
+    if (saved) textDiv.innerText = saved;
+    document.getElementById('overviewInput').value = textDiv.innerText;
+  };
+
+  function toggleEdit(id) {
+    const textDiv   = document.getElementById(id + 'Text');
+    const inputArea = document.getElementById(id + 'Input');
+    const btn = textDiv.closest('.card').querySelector('.edit-toggle-btn');
+
+    if (inputArea.style.display === 'block') {
+      textDiv.innerText = inputArea.value;
+      localStorage.setItem(id + 'Text', inputArea.value);
+      textDiv.style.display  = 'block';
+      inputArea.style.display = 'none';
+      btn.innerHTML = '✏️ 편집';
+    } else {
+      inputArea.value         = textDiv.innerText;
+      textDiv.style.display   = 'none';
+      inputArea.style.display = 'block';
+      btn.innerHTML = '💾 저장';
+    }
+  }
+</script>
+
+</body>
+</html>
