@@ -4,56 +4,133 @@
   <meta charset="utf-8">
   <title>ESP32 Robot Remote</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-      --bg-color: #f4f6f9;
-      --card-bg: #ffffff;
-      --primary-color: #6c5ce7;
-      --text-color: #2d3436;
-      --border-radius: 22px;
+      --bg: #f0f2f8;
+      --card: #ffffff;
+      --primary: #6c5ce7;
+      --primary-light: #a29bfe;
+      --accent: #00cec9;
+      --text: #1e272e;
+      --text-sub: #57606f;
+      --text-muted: #a4b0be;
+      --border: rgba(108, 92, 231, 0.09);
+      --radius: 20px;
+      --shadow: 0 8px 32px rgba(108, 92, 231, 0.10);
     }
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 85%, rgba(0, 206, 201, 0.07) 0%, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
+      min-height: 100vh;
+      padding: 28px 20px;
     }
 
-    h2 {
-      margin-bottom: 20px;
+    /* ── Top Nav ─────────────────────────────────── */
+    .top-nav {
+      position: fixed;
+      top: 18px;
+      right: 24px;
+      z-index: 100;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--primary);
+      font-size: 12.5px;
       font-weight: 700;
-      color: #2d3436;
-      letter-spacing: -0.5px;
-      font-size: 26px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      text-decoration: none;
+      box-shadow: var(--shadow);
+      transition: all 0.2s;
     }
 
+    .nav-link:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* ── Hero ────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      background: linear-gradient(135deg, var(--primary) 20%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Main Wrapper ────────────────────────────── */
     .main-wrapper {
       display: flex;
-      gap: 30px;
-      width: 1040px;
+      gap: 20px;
+      width: 1140px;
       max-width: 96vw;
     }
 
+    /* ── Panel / Card ────────────────────────────── */
     .panel {
-      background: var(--card-bg);
-      padding: 30px;
-      border-radius: var(--border-radius);
-      box-shadow: 0 12px 35px rgba(108, 92, 231, 0.07);
-      border: 1px solid rgba(223, 230, 233, 0.8);
-      box-sizing: border-box;
+      background: var(--card);
+      padding: 28px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      border-radius: 4px 0 0 4px;
     }
 
     .left-panel {
       flex: 1.1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
     }
 
     .right-panel {
@@ -62,57 +139,143 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      gap: 20px;
+      padding: 28px 24px;
     }
 
+    /* ── Section Title ───────────────────────────── */
     .section-title {
-      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(108, 92, 231, 0.09), rgba(0, 206, 201, 0.07));
+      color: var(--primary);
+      font-size: 10.5px;
       font-weight: 700;
-      color: #b2bec3;
-      margin-bottom: 8px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      padding: 4px 11px;
+      border-radius: 100px;
+      margin-bottom: 12px;
     }
 
-    .ip-box {
-      background: #f8f9fa;
-      padding: 12px 16px;
+    /* ── Connection Box ──────────────────────────── */
+    .conn-box {
+      background: #f8f9ff;
+      padding: 14px 16px;
       border-radius: 14px;
-      border: 1px solid #e1e8ed;
-      font-size: 14px;
-      font-weight: 600;
+      border: 1px solid rgba(108, 92, 231, 0.10);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .conn-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
     }
 
     input[type="text"] {
-      padding: 8px 12px;
-      font-size: 15px;
-      width: 140px;
-      border: 2px solid #dfe4ea;
+      padding: 8px 13px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      flex: 1;
+      min-width: 130px;
+      border: 2px solid rgba(108, 92, 231, 0.15);
       border-radius: 10px;
       outline: none;
       text-align: center;
+      color: var(--text);
+      background: white;
+      transition: border-color 0.2s;
     }
 
     input[type="text"]:focus {
-      border-color: var(--primary-color);
+      border-color: var(--primary);
     }
 
-    .ip-box button {
-      padding: 8px 14px;
-      font-size: 14px;
-      font-weight: bold;
-      background-color: #0984e3;
+    .btn-connect {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
     }
 
-    .ip-box button:hover {
-      background-color: #74b9ff;
+    .btn-connect:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-disconnect {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      background: rgba(225, 112, 85, 0.12);
+      color: #e17055;
+      border: 1.5px solid rgba(225, 112, 85, 0.25);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .btn-disconnect:hover {
+      background: #e17055;
+      color: white;
+      border-color: #e17055;
+      transform: translateY(-1px);
+    }
+
+    /* ── Connection Status Badge ─────────────────── */
+    .conn-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 100px;
+      transition: all 0.3s;
+    }
+
+    .conn-status.idle    { background: #f1f2f6; color: var(--text-muted); }
+    .conn-status.connecting { background: rgba(253, 203, 110, 0.2); color: #e1a813; }
+    .conn-status.connected  { background: rgba(0, 184, 148, 0.12); color: #00b894; }
+    .conn-status.error   { background: rgba(225, 112, 85, 0.12); color: #e17055; }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .conn-status.connected .status-dot {
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    /* ── Control Menu ────────────────────────────── */
+    .menu-group {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
     }
 
     .menu-row {
@@ -120,107 +283,159 @@
       gap: 8px;
     }
 
-    .menu-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
     .btn-menu {
-      padding: 11px;
-      font-size: 14px;
-      font-weight: 600;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
       border: none;
-      border-radius: 14px;
+      border-radius: 13px;
       cursor: pointer;
       transition: all 0.2s ease;
-      background-color: #f1f2f6;
-      color: #4b6584;
+      text-align: center;
     }
 
     .btn-menu:hover:not(:disabled) {
       transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+
+    .btn-menu:active:not(:disabled) {
+      transform: scale(0.97);
     }
 
     .btn-menu:disabled {
-      background-color: #f8f9fa;
-      color: #dcdde1;
+      background: #f1f2f6 !important;
+      color: #c8cdd2 !important;
       cursor: not-allowed;
-      transform: none;
+      transform: none !important;
       box-shadow: none !important;
+      filter: none !important;
     }
 
-    #recordBtn { background-color: #ff7675; color: white; box-shadow: 0 4px 10px rgba(255, 118, 117, 0.3); }
-    #stopRecordBtn { background-color: #ffeaa7; color: #d35400; }
-    #replayBtn { background-color: #a29bfe; color: white; box-shadow: 0 4px 10px rgba(162, 155, 254, 0.3); }
-    #returnBtn { background-color: #55efc4; color: #00b894; box-shadow: 0 4px 10px rgba(85, 239, 196, 0.3); }
-    
+    #recordBtn     { background: #ff7675; color: white; box-shadow: 0 4px 14px rgba(255,118,117,0.30); }
+    #stopRecordBtn { background: #ffeaa7; color: #c0882a; }
+    #replayBtn     { background: var(--primary-light); color: white; box-shadow: 0 4px 14px rgba(162,155,254,0.30); }
+    #returnBtn     { background: #55efc4; color: #00856f; box-shadow: 0 4px 14px rgba(85,239,196,0.28); }
+
     #clearBtn {
-      background-color: #fab1a0;
-      color: #d63031;
-      width: 50px;
+      width: 46px;
       flex-shrink: 0;
+      background: #fab1a0;
+      color: #c0392b;
+      font-size: 17px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 4px 10px rgba(214, 48, 49, 0.15);
+      box-shadow: 0 4px 10px rgba(214,48,49,0.15);
     }
+
     #clearBtn:hover:not(:disabled) {
-      background-color: #ff7675;
+      background: #ff7675;
       color: white;
+    }
+
+    /* ── Log ─────────────────────────────────────── */
+    .log-wrap { width: 100%; }
+
+    #log {
+      width: 100%;
+      height: 96px;
+      background: #1a2330;
+      border: 1px solid #2d3e50;
+      border-radius: 13px;
+      padding: 12px 14px;
+      overflow-y: auto;
+      font-size: 12.5px;
+      font-family: 'Courier New', Courier, monospace;
+      color: #0be881;
+      line-height: 1.6;
+    }
+
+    #log::-webkit-scrollbar { width: 5px; }
+    #log::-webkit-scrollbar-track { background: transparent; }
+    #log::-webkit-scrollbar-thumb { background: #2d3e50; border-radius: 3px; }
+
+    /* ── D-Pad ───────────────────────────────────── */
+    .dpad-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
 
     .d-pad {
       display: grid;
-      grid-template-columns: repeat(3, 110px);
-      grid-template-rows: repeat(3, 110px);
+      grid-template-columns: repeat(3, 128px);
+      grid-template-rows: repeat(3, 128px);
       gap: 12px;
-      justify-content: center;
     }
 
     .control-btn {
-      background-color: #ffffff;
-      border: 2px solid #e1e8ed;
-      border-radius: 20px;
-      font-size: 19px;
-      font-weight: 700;
-      color: #2d3436;
+      background: white;
+      border: 2px solid rgba(108, 92, 231, 0.12);
+      border-radius: 18px;
+      font-size: 18px;
+      font-weight: 800;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: all 0.1s ease;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+      gap: 4px;
+      transition: all 0.12s ease;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
       user-select: none;
     }
 
-    .control-btn span {
-      font-size: 13px;
-      color: #b2bec3;
-      margin-top: 5px;
+    .control-btn .key-hint {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
     }
 
     .control-btn:hover:not(:disabled) {
-      border-color: var(--primary-color);
-      color: var(--primary-color);
-      background-color: #fbfbfe;
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #fbfbfe;
+      box-shadow: 0 6px 18px rgba(108, 92, 231, 0.12);
     }
 
-    .control-btn:active:not(:disabled), .control-btn.active {
-      background-color: var(--primary-color);
+    .control-btn:active:not(:disabled),
+    .control-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white;
+      border-color: transparent;
       transform: scale(0.95);
+      box-shadow: 0 6px 20px rgba(108, 92, 231, 0.30);
     }
-    .control-btn.active span { color: #f1f2f6; }
+
+    .control-btn.active .key-hint { color: rgba(255,255,255,0.7); }
 
     .control-btn:disabled {
-      background-color: #f8f9fa;
-      border-color: #f1f2f6;
-      color: #dfe4ea;
+      background: #f8f9fa;
+      border-color: #ecedf0;
+      color: #d0d3da;
       cursor: not-allowed;
       box-shadow: none;
+    }
+
+    /* 중앙 정지 셀 */
+    .btn-center {
+      grid-column: 2; grid-row: 2;
+      background: #f8f9ff;
+      border: 2px dashed rgba(108, 92, 231, 0.15);
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: default;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn-forward  { grid-column: 2; grid-row: 1; }
@@ -228,67 +443,98 @@
     .btn-right    { grid-column: 3; grid-row: 2; }
     .btn-backward { grid-column: 2; grid-row: 3; }
 
-    .log-container {
-      width: 100%;
+    /* ── Recording indicator ─────────────────────── */
+    .rec-indicator {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #e17055;
     }
 
-    #log {
-      width: 100%;
-      height: 100px;
-      background: #1e272e;
-      border: 1px solid #485460;
-      border-radius: 14px;
-      padding: 12px 14px;
-      box-sizing: border-box;
-      overflow-y: auto;
-      font-size: 13px;
-      font-family: 'Courier New', Courier, monospace;
-      color: #0be881;
-      line-height: 1.5;
+    .rec-indicator.visible { display: flex; }
+
+    .rec-dot {
+      width: 8px; height: 8px;
+      background: #e17055;
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
     }
   </style>
 </head>
 <body>
 
-  <h2>✨ ESP32 Smart Robot Remote ✨</h2>
+  <!-- 상단 문서 링크 -->
+  <div class="top-nav">
+    <a class="nav-link" href="doc.html">📄 Documentation →</a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">🤖 Remote Control Panel</div>
+    <h1>ESP32 Smart Robot</h1>
+  </div>
 
   <div class="main-wrapper">
-    
+
+    <!-- ── Left Panel ── -->
     <div class="panel left-panel">
+
+      <!-- Connection -->
       <div>
-        <div class="section-title">Connection</div>
-        <div class="ip-box">
-          <span>ESP32 IP</span>
-          <input id="espIP" type="text" value="192.168.0.50">
-          <button onclick="testESP()">연결 테스트</button>
+        <div class="section-title">📡 Connection</div>
+        <div class="conn-box">
+          <span class="conn-label">ESP32 IP</span>
+          <input id="espIP" type="text" value="192.168.0.50" placeholder="192.168.x.x">
+          <button class="btn-connect" id="connectBtn" onclick="testESP()">연결</button>
+          <button class="btn-disconnect" id="disconnectBtn" onclick="disconnectESP()">연결 끊기</button>
+          <div class="conn-status idle" id="connStatus">
+            <div class="status-dot"></div>
+            <span id="connStatusText">대기 중</span>
+          </div>
         </div>
       </div>
 
+      <!-- Control Menu -->
       <div class="menu-group">
-        <div class="section-title">Control Menu</div>
+        <div class="section-title">🎮 Control Menu</div>
         <button class="btn-menu" id="recordBtn" onclick="toggleRecord()">🔴 운전 기록 시작</button>
         <button class="btn-menu" id="stopRecordBtn" onclick="stopRecord()" disabled>⏹ 운전 기록 정지</button>
-        
         <div class="menu-row">
-          <button class="btn-menu" id="replayBtn" onclick="replayPath()" disabled style="flex: 1;">🚗 길 따라가기 (정방향)</button>
-          <button class="btn-menu" id="returnBtn" onclick="returnHome()" disabled style="flex: 1;">🏠 제자리 복귀 (역순)</button>
+          <button class="btn-menu" id="replayBtn" onclick="replayPath()" disabled style="flex:1;">🚗 길 따라가기</button>
+          <button class="btn-menu" id="returnBtn" onclick="returnHome()" disabled style="flex:1;">🏠 제자리 복귀</button>
           <button class="btn-menu" id="clearBtn" onclick="clearMemory()" disabled title="기록 삭제">🗑️</button>
         </div>
       </div>
 
-      <div class="log-container">
-        <div class="section-title">System Log</div>
-        <div id="log">> 대기 중... 기록 시작 버튼을 눌러주세요.</div>
+      <!-- System Log -->
+      <div class="log-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0;">💻 System Log</div>
+          <div class="rec-indicator" id="recIndicator">
+            <div class="rec-dot"></div> REC
+          </div>
+        </div>
+        <div id="log">> 대기 중... 연결 후 기록 시작 버튼을 눌러주세요.</div>
       </div>
+
     </div>
 
+    <!-- ── Right Panel ── -->
     <div class="panel right-panel">
-      <div class="section-title" style="margin-bottom: 15px;">Driving Pad</div>
+      <div class="dpad-label">Driving Pad</div>
       <div class="d-pad">
-        <button class="control-btn btn-forward" data-cmd="f" disabled>전진<span>[W]</span></button>
-        <button class="control-btn btn-left" data-cmd="l" disabled>좌회전<span>[A]</span></button>
-        <button class="control-btn btn-right" data-cmd="r" disabled>우회전<span>[D]</span></button>
-        <button class="control-btn btn-backward" data-cmd="b" disabled>후진<span>[S]</span></button>
+        <button class="control-btn btn-forward"  data-cmd="f" disabled>▲<span class="key-hint">[W]</span></button>
+        <button class="control-btn btn-left"     data-cmd="l" disabled>◀<span class="key-hint">[A]</span></button>
+        <div class="btn-center">⏹</div>
+        <button class="control-btn btn-right"    data-cmd="r" disabled>▶<span class="key-hint">[D]</span></button>
+        <button class="control-btn btn-backward" data-cmd="b" disabled>▼<span class="key-hint">[S]</span></button>
       </div>
     </div>
 
@@ -297,21 +543,54 @@
 <script>
     let isRecording = false;
     let isPlaying = false;
-    let recordedMemory = []; 
+    let recordedMemory = [];
     let currentAction = null;
     let startTime = null;
     let ws = null;
 
-    function testESP(){
+    /* ── 연결 상태 UI ── */
+    function setConnStatus(state, text) {
+      const el = document.getElementById('connStatus');
+      el.className = 'conn-status ' + state;
+      document.getElementById('connStatusText').textContent = text;
+
+      // 연결됨 상태일 때만 연결 끊기 버튼 표시
+      const isConnected = (state === 'connected');
+      document.getElementById('connectBtn').style.display    = isConnected ? 'none' : '';
+      document.getElementById('disconnectBtn').style.display = isConnected ? '' : 'none';
+    }
+
+    function testESP() {
       const ip = document.getElementById("espIP").value;
+      setConnStatus('connecting', '연결 중...');
+
       ws = new WebSocket(`ws://${ip}:81`);
-      
-      ws.onopen = function() {
-        alert("ESP32 웹소켓 연결 성공!");
+
+      ws.onopen = function () {
+        setConnStatus('connected', '연결됨');
+        addLog("✅ ESP32 WebSocket 연결 성공!");
       };
-      ws.onerror = function() {
-        alert("ESP32 연결 실패");
+
+      ws.onclose = function () {
+        setConnStatus('idle', '연결 끊김');
+        addLog("🔌 연결이 종료되었습니다.");
       };
+
+      ws.onerror = function () {
+        setConnStatus('error', '연결 실패');
+        addLog("❌ ESP32 연결 실패. IP를 확인해주세요.");
+      };
+    }
+
+    function disconnectESP() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+      // 기록 중이었다면 정지
+      if (isRecording) stopRecord();
+      setConnStatus('idle', '대기 중');
+      addLog("🔌 연결을 수동으로 끊었습니다.");
     }
 
     function addLog(msg) {
@@ -330,27 +609,29 @@
       const hasData = recordedMemory.length > 0;
       document.getElementById("replayBtn").disabled = !(enabled && hasData);
       document.getElementById("returnBtn").disabled = !(enabled && hasData);
-      document.getElementById("clearBtn").disabled = !(enabled && hasData);
+      document.getElementById("clearBtn").disabled  = !(enabled && hasData);
     }
 
     function toggleRecord() {
       isRecording = true;
-      recordedMemory = []; 
-      document.getElementById("recordBtn").disabled = true;
+      recordedMemory = [];
+      document.getElementById("recordBtn").disabled     = true;
       document.getElementById("stopRecordBtn").disabled = false;
+      document.getElementById("recIndicator").classList.add('visible');
       updateMenuButtons(false);
       document.querySelectorAll('.control-btn').forEach(b => b.disabled = false);
-      addLog("운전 기록을 시작합니다.");
+      addLog("🔴 운전 기록을 시작합니다.");
     }
 
     function stopRecord() {
       isRecording = false;
-      document.getElementById("recordBtn").disabled = false;
+      document.getElementById("recordBtn").disabled     = false;
       document.getElementById("stopRecordBtn").disabled = true;
+      document.getElementById("recIndicator").classList.remove('visible');
       updateMenuButtons(true);
       document.querySelectorAll('.control-btn').forEach(b => b.disabled = true);
       sendCmd('s');
-      addLog(`운전 기록 완료! (총 ${recordedMemory.length}개 동작 저장됨)`);
+      addLog(`⏹ 운전 기록 완료! (총 ${recordedMemory.length}개 동작 저장됨)`);
     }
 
     function clearMemory() {
@@ -365,7 +646,6 @@
       currentAction = cmd;
       startTime = Date.now();
       sendCmd(cmd);
-
       const btn = document.querySelector(`.control-btn[data-cmd="${cmd}"]`);
       if (btn) btn.classList.add('active');
     }
@@ -373,35 +653,29 @@
     function endAction(cmd) {
       if (!isRecording || isPlaying) return;
       if (!currentAction) return;
-      
-      let duration = (Date.now() - startTime) / 1000; 
+      const duration = (Date.now() - startTime) / 1000;
       sendCmd('s');
-
       document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
-
       if (duration >= 0.05) {
-        recordedMemory.push({ cmd: currentAction, duration: duration });
-        let msg = `${duration.toFixed(1)}초 간 동작!`;
-        addLog(msg);
+        recordedMemory.push({ cmd: currentAction, duration });
+        addLog(`↳ ${duration.toFixed(1)}초 동작 기록됨`);
       }
       currentAction = null;
     }
 
     document.querySelectorAll('.control-btn').forEach(btn => {
       const cmd = btn.getAttribute('data-cmd');
-      
-      btn.addEventListener('mousedown', (e) => { e.preventDefault(); startAction(cmd); });
-      btn.addEventListener('mouseup', (e) => { e.preventDefault(); endAction(cmd); });
-      btn.addEventListener('mouseleave', (e) => { if (currentAction === cmd) endAction(cmd); });
-
-      btn.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(cmd); });
-      btn.addEventListener('touchend', (e) => { e.preventDefault(); endAction(cmd); });
+      btn.addEventListener('mousedown',  e => { e.preventDefault(); startAction(cmd); });
+      btn.addEventListener('mouseup',    e => { e.preventDefault(); endAction(cmd); });
+      btn.addEventListener('mouseleave', e => { if (currentAction === cmd) endAction(cmd); });
+      btn.addEventListener('touchstart', e => { e.preventDefault(); startAction(cmd); });
+      btn.addEventListener('touchend',   e => { e.preventDefault(); endAction(cmd); });
     });
 
     const keyMap = { 'w': 'f', 'a': 'l', 'd': 'r', 's': 'b' };
     const activeKeys = {};
 
-    window.addEventListener('keydown', (e) => {
+    window.addEventListener('keydown', e => {
       const key = e.key.toLowerCase();
       if (keyMap[key] && !activeKeys[key]) {
         activeKeys[key] = true;
@@ -409,7 +683,7 @@
       }
     });
 
-    window.addEventListener('keyup', (e) => {
+    window.addEventListener('keyup', e => {
       const key = e.key.toLowerCase();
       if (keyMap[key]) {
         activeKeys[key] = false;
@@ -417,7 +691,6 @@
       }
     });
 
-    // 정방향 길 따라가기 함수 (오타 수정 완료)
     async function replayPath() {
       if (recordedMemory.length === 0 || isPlaying) return;
       isPlaying = true;
@@ -428,9 +701,7 @@
         sendCmd(step.cmd);
         const btn = document.querySelector(`.control-btn[data-cmd="${step.cmd}"]`);
         if (btn) btn.classList.add('active');
-
         await new Promise(r => setTimeout(r, step.duration * 1000));
-
         sendCmd('s');
         if (btn) btn.classList.remove('active');
         await new Promise(r => setTimeout(r, 200));
@@ -439,10 +710,9 @@
       isPlaying = false;
       updateMenuButtons(true);
       document.getElementById("recordBtn").disabled = false;
-      addLog("🚗 길 따라가기 완료!");
+      addLog("✅ 길 따라가기 완료!");
     }
 
-    // 역순(제자리 복귀) 함수
     async function returnHome() {
       if (recordedMemory.length === 0 || isPlaying) return;
       isPlaying = true;
@@ -450,21 +720,15 @@
       addLog("🏠 제자리 복귀(역순) 시작...");
 
       const reversed = [...recordedMemory].reverse().map(step => {
-        let oppositeCmd = step.cmd;
-        if (step.cmd === 'f') oppositeCmd = 'b';
-        else if (step.cmd === 'b') oppositeCmd = 'f';
-        else if (step.cmd === 'l') oppositeCmd = 'r';
-        else if (step.cmd === 'r') oppositeCmd = 'l';
-        return { cmd: oppositeCmd, duration: step.duration };
+        const map = { 'f': 'b', 'b': 'f', 'l': 'r', 'r': 'l' };
+        return { cmd: map[step.cmd] || step.cmd, duration: step.duration };
       });
 
       for (let step of reversed) {
         sendCmd(step.cmd);
         const btn = document.querySelector(`.control-btn[data-cmd="${step.cmd}"]`);
         if (btn) btn.classList.add('active');
-
         await new Promise(r => setTimeout(r, step.duration * 1000));
-
         sendCmd('s');
         if (btn) btn.classList.remove('active');
         await new Promise(r => setTimeout(r, 200));
@@ -473,8 +737,8 @@
       isPlaying = false;
       updateMenuButtons(true);
       document.getElementById("recordBtn").disabled = false;
-      addLog("🏠 제자리 복귀 완료!");
+      addLog("✅ 제자리 복귀 완료!");
     }
-  </script>
+</script>
 </body>
 </html>
